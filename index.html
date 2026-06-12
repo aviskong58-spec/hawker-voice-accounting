@@ -1,224 +1,654 @@
-<html lang="zh-CN"><head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>小贩语音记账</title>
-<meta name="theme-color" content="#000000">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black">
-<style>
-* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-html, body { height: 100%; margin: 0; }
-body {
-  background: #000; color: #fff;
-  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Noto Sans SC", "Helvetica Neue", Arial, sans-serif;
-  overscroll-behavior: none;
-}
-.app { max-width: 520px; margin: 0 auto; padding: 16px 16px 100px; }
-header { display: flex; justify-content: space-between; align-items: center; padding: 4px 0 18px; }
-h1 { font-size: 24px; margin: 0; font-weight: 800; }
-#date { opacity: .65; font-size: 14px; }
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>小贩语音记账</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-.totals { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 22px; }
-.card { background: #0d0d0d; border: 1px solid #1a1a1a; border-radius: 18px; padding: 14px 16px; }
-.card label { font-size: 13px; opacity: .7; display: block; }
-.card .value { font-size: 34px; font-weight: 800; margin-top: 6px; }
-.card.cash { box-shadow: inset 3px 0 0 #22c55e; }
-.card.cash .value { color: #22c55e; }
-.card.tng { box-shadow: inset 3px 0 0 #3b82f6; }
-.card.tng .value { color: #3b82f6; }
-.card.total { grid-column: 1 / -1; }
-.card.total .value { color: #facc15; font-size: 44px; }
+        body {
+            background: #000;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+            height: 100vh;
+            overflow: hidden;
+        }
 
-.mic-wrap { text-align: center; margin: 20px 0; }
-.mic { width: 190px; height: 190px; border-radius: 50%; background: radial-gradient(circle at 30% 20%, #ff5a5a, #dc2626 60%, #991b1b); border: none; color: white; font-size: 20px; font-weight: 800; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 20px 40px rgba(220,38,38,.35); cursor: pointer; margin: 0 auto; }
-.mic:active { transform: scale(.94); }
-.mic-icon { font-size: 56px; }
-#status { margin-top: 14px; font-size: 15px; opacity: .85; height: 22px; }
+        .container {
+            max-width: 520px;
+            margin: 0 auto;
+            padding: 20px;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
 
-.heard { background: #0a0a0a; border: 1px solid #222; border-radius: 16px; padding: 14px; margin: 14px 0; }
-#lastText { font-size: 20px; font-weight: 700; min-height: 28px; }
-.manual { display: flex; gap: 8px; margin-top: 12px; }
-.manual input { flex: 1; background: #000; border: 1px solid #333; border-radius: 12px; padding: 14px 12px; color: #fff; font-size: 17px; }
-.manual button { padding: 0 16px; border: none; border-radius: 12px; font-weight: 800; font-size: 15px; cursor: pointer; }
-#addCashBtn { background: #052e16; color: #4ade80; }
-#addTngBtn { background: #0b1a3a; color: #60a5fa; }
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #333;
+        }
 
-table { width: 100%; border-collapse: collapse; background: #0a0a0a; border: 1px solid #1a1a1a; border-radius: 14px; }
-thead th { background: #111; font-size: 13px; padding: 11px 12px; opacity: .75; }
-tbody td { padding: 14px 12px; border-top: 1px solid #181818; }
-.type-cash { color: #22c55e; }
-.type-tng { color: #3b82f6; }
+        h1 {
+            font-size: 24px;
+            font-weight: bold;
+        }
 
-.actions { position: fixed; bottom: 0; left: 0; right: 0; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; padding: 12px 16px; background: #000; max-width: 520px; margin: 0 auto; }
-.actions button { height: 58px; border: none; border-radius: 14px; font-size: 18px; font-weight: 800; background: #1c1c1c; color: #fff; cursor: pointer; }
-#clearBtn { background: #2a0f0f; color: #fca5a5; }
-#settleBtn { background: #facc15; color: #000; }
-</style>
+        .date-display {
+            font-size: 12px;
+            opacity: 0.7;
+        }
+
+        .totals {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .card {
+            background: #111;
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 16px;
+            text-align: center;
+        }
+
+        .card-label {
+            font-size: 12px;
+            opacity: 0.6;
+            margin-bottom: 8px;
+        }
+
+        .card-value {
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .cash .card-value {
+            color: #22c55e;
+        }
+
+        .tng .card-value {
+            color: #3b82f6;
+        }
+
+        .total-card {
+            grid-column: 1 / -1;
+            background: #1a1a1a;
+        }
+
+        .total-card .card-value {
+            color: #facc15;
+            font-size: 36px;
+        }
+
+        .mic-section {
+            text-align: center;
+            margin: 30px 0;
+        }
+
+        .mic-btn {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            border: none;
+            background: linear-gradient(135deg, #dc2626, #991b1b);
+            color: white;
+            font-size: 60px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto;
+            transition: transform 0.1s;
+            box-shadow: 0 10px 30px rgba(220, 38, 38, 0.3);
+        }
+
+        .mic-btn:active {
+            transform: scale(0.95);
+        }
+
+        .mic-btn.listening {
+            background: linear-gradient(135deg, #ea580c, #c2410c);
+        }
+
+        .status-text {
+            margin-top: 15px;
+            font-size: 14px;
+            color: #888;
+            min-height: 20px;
+        }
+
+        .input-section {
+            background: #111;
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 16px;
+            margin: 20px 0;
+        }
+
+        .input-label {
+            font-size: 12px;
+            opacity: 0.6;
+            margin-bottom: 10px;
+        }
+
+        .recognized-text {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 12px;
+            min-height: 24px;
+            padding: 8px;
+            background: #000;
+            border-radius: 8px;
+            border: 1px solid #333;
+        }
+
+        .input-row {
+            display: flex;
+            gap: 8px;
+        }
+
+        .input-row input {
+            flex: 1;
+            background: #000;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 12px;
+            color: #fff;
+            font-size: 16px;
+        }
+
+        .input-row input:focus {
+            outline: none;
+            border-color: #666;
+        }
+
+        .input-row button {
+            padding: 12px 16px;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 14px;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .btn-cash {
+            background: #052e16;
+            color: #4ade80;
+            border: 1px solid #14532d;
+        }
+
+        .btn-tng {
+            background: #0b1a3a;
+            color: #60a5fa;
+            border: 1px solid #1e3a8a;
+        }
+
+        .records-section {
+            margin: 20px 0;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .records-title {
+            font-size: 12px;
+            opacity: 0.6;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .record-count {
+            background: #333;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+        }
+
+        .records-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #111;
+            border: 1px solid #333;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .records-table th {
+            background: #1a1a1a;
+            padding: 12px;
+            text-align: left;
+            font-size: 12px;
+            opacity: 0.6;
+        }
+
+        .records-table td {
+            padding: 12px;
+            border-top: 1px solid #222;
+            font-size: 14px;
+        }
+
+        .records-table tr:first-child td {
+            border-top: none;
+        }
+
+        .type-cash {
+            color: #22c55e;
+            font-weight: bold;
+        }
+
+        .type-tng {
+            color: #3b82f6;
+            font-weight: bold;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 30px;
+            opacity: 0.5;
+            font-size: 14px;
+        }
+
+        .action-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+            margin-top: 20px;
+            padding-bottom: 20px;
+        }
+
+        .action-buttons button {
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 14px;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        .action-buttons button:active {
+            opacity: 0.8;
+        }
+
+        .btn-settle {
+            background: #facc15;
+            color: #000;
+        }
+
+        .btn-undo {
+            background: #333;
+            color: #fff;
+        }
+
+        .btn-clear {
+            background: #7f1d1d;
+            color: #fca5a5;
+        }
+
+        .recognition-support {
+            font-size: 11px;
+            opacity: 0.5;
+            margin-top: 10px;
+            text-align: center;
+        }
+    </style>
 </head>
 <body>
-<div class="app">
-  <header>
-    <h1>小贩语音记账</h1>
-    <div id="date">-</div>
-  </header>
+    <div class="container">
+        <header>
+            <h1>💰 小贩记账</h1>
+            <div class="date-display" id="dateDisplay">-</div>
+        </header>
 
-  <div class="totals">
-    <div class="card cash">
-      <label>现金总额</label>
-      <div class="value" id="cashTotal">RM 0.00</div>
+        <div class="totals">
+            <div class="card cash">
+                <div class="card-label">现金</div>
+                <div class="card-value" id="cashTotal">RM 0.00</div>
+            </div>
+            <div class="card tng">
+                <div class="card-label">TnG</div>
+                <div class="card-value" id="tngTotal">RM 0.00</div>
+            </div>
+            <div class="card total-card">
+                <div class="card-label">总收入</div>
+                <div class="card-value" id="grandTotal">RM 0.00</div>
+            </div>
+        </div>
+
+        <div class="mic-section">
+            <button class="mic-btn" id="micBtn">🎤</button>
+            <div class="status-text" id="statusText">点击麦克风说话</div>
+            <div class="recognition-support" id="supportText"></div>
+        </div>
+
+        <div class="input-section">
+            <div class="input-label">识别内容</div>
+            <div class="recognized-text" id="recognizedText">-</div>
+            <div class="input-row">
+                <input type="number" id="amountInput" placeholder="输入金额" step="0.01">
+                <button class="input-row button btn-cash" id="btnAddCash">现金</button>
+                <button class="input-row button btn-tng" id="btnAddTng">TnG</button>
+            </div>
+        </div>
+
+        <div class="records-section">
+            <div class="records-title">
+                <span>今日记录</span>
+                <span class="record-count" id="recordCount">0 笔</span>
+            </div>
+            <table class="records-table">
+                <thead>
+                    <tr>
+                        <th>时间</th>
+                        <th>类型</th>
+                        <th style="text-align: right;">金额</th>
+                    </tr>
+                </thead>
+                <tbody id="recordsBody">
+                    <tr><td colspan="3" class="empty-state">还没有记录</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="action-buttons">
+            <button class="btn-settle" id="btnSettle">结算</button>
+            <button class="btn-undo" id="btnUndo">撤销</button>
+            <button class="btn-clear" id="btnClear">清空</button>
+        </div>
     </div>
-    <div class="card tng">
-      <label>TnG总额</label>
-      <div class="value" id="tngTotal">RM 0.00</div>
-    </div>
-    <div class="card total">
-      <label>今日总收入</label>
-      <div class="value" id="allTotal">RM 0.00</div>
-    </div>
-  </div>
 
-  <div class="mic-wrap">
-    <button id="micBtn" class="mic">
-      <div class="mic-icon">🎤</div>
-      <div>按住说话</div>
-    </button>
-    <div id="status">准备就绪 · 离线可用</div>
-  </div>
+    <script>
+        // 应用状态
+        let records = [];
+        let isListening = false;
+        let recognition = null;
 
-  <div class="heard">
-    <div id="lastText">-</div>
-    <div class="manual">
-      <input id="manualInput" type="text" placeholder="手动输入...">
-      <button id="addCashBtn">记现金</button>
-      <button id="addTngBtn">记TnG</button>
-    </div>
-  </div>
+        // 获取DOM元素
+        const elements = {
+            cashTotal: document.getElementById('cashTotal'),
+            tngTotal: document.getElementById('tngTotal'),
+            grandTotal: document.getElementById('grandTotal'),
+            micBtn: document.getElementById('micBtn'),
+            statusText: document.getElementById('statusText'),
+            recognizedText: document.getElementById('recognizedText'),
+            amountInput: document.getElementById('amountInput'),
+            recordsBody: document.getElementById('recordsBody'),
+            recordCount: document.getElementById('recordCount'),
+            dateDisplay: document.getElementById('dateDisplay'),
+            supportText: document.getElementById('supportText'),
+            btnAddCash: document.getElementById('btnAddCash'),
+            btnAddTng: document.getElementById('btnAddTng'),
+            btnSettle: document.getElementById('btnSettle'),
+            btnUndo: document.getElementById('btnUndo'),
+            btnClear: document.getElementById('btnClear')
+        };
 
-  <div style="margin-top: 24px; margin-bottom: 100px;">
-    <div style="font-size: 14px; opacity: .7; margin-bottom: 10px;">
-      <span>今日记录</span>
-      <span style="float: right;" id="countBadge">0 笔</span>
-    </div>
-    <table>
-      <thead><tr><th>时间</th><th>类型</th><th style="text-align:right">金额</th></tr></thead>
-      <tbody id="listBody">
-        <tr><td colspan="3" style="text-align:center; opacity: .5;">还没有记录</td></tr>
-      </tbody>
-    </table>
-  </div>
-</div>
+        // 格式化金额
+        function formatCurrency(amount) {
+            return 'RM ' + amount.toFixed(2);
+        }
 
-<div class="actions">
-  <button id="settleBtn">结算</button>
-  <button id="undoBtn">撤销</button>
-  <button id="clearBtn">清空</button>
-</div>
+        // 格式化时间
+        function formatTime(timestamp) {
+            const date = new Date(timestamp);
+            return date.toLocaleTimeString('zh-CN', {
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+        }
 
-<script>
-// --- App Logic ---
-const $ = id => document.getElementById(id);
-const cashTotalEl = $('cashTotal'), tngTotalEl = $('tngTotal'), allTotalEl = $('allTotal');
-const listBody = $('listBody'), lastText = $('lastText'), statusEl = $('status');
-const micBtn = $('micBtn'), manualInput = $('manualInput');
-const countBadge = $('countBadge');
+        // 更新日期显示
+        function updateDate() {
+            const today = new Date();
+            const options = { month: 'long', day: 'numeric', weekday: 'short' };
+            elements.dateDisplay.textContent = today.toLocaleDateString('zh-CN', options);
+        }
 
-let records = [];
-const todayKey = () => 'hawker-' + new Date().toISOString().slice(0,10);
+        // 获取今天的key
+        function getTodayKey() {
+            const date = new Date().toISOString().slice(0, 10);
+            return 'hawker_' + date;
+        }
 
-function fmt(n){ return 'RM ' + n.toFixed(2); }
-function timeStr(ts){ const d=new Date(ts); return d.toLocaleTimeString('zh-HK',{hour:'2-digit',minute:'2-digit'}); }
+        // 加载数据
+        function loadRecords() {
+            const key = getTodayKey();
+            const data = localStorage.getItem(key);
+            records = data ? JSON.parse(data) : [];
+            updateDisplay();
+        }
 
-function loadData(){
-  records = JSON.parse(localStorage.getItem(todayKey()) || '[]');
-  render();
-}
-function saveData(){ localStorage.setItem(todayKey(), JSON.stringify(records)); }
+        // 保存数据
+        function saveRecords() {
+            const key = getTodayKey();
+            localStorage.setItem(key, JSON.stringify(records));
+        }
 
-function render(){
-  const cash = records.filter(r=>r.type==='cash').reduce((s,r)=>s+r.amount,0);
-  const tng = records.filter(r=>r.type==='tng').reduce((s,r)=>s+r.amount,0);
-  cashTotalEl.textContent = fmt(cash);
-  tngTotalEl.textContent = fmt(tng);
-  allTotalEl.textContent = fmt(cash+tng);
-  countBadge.textContent = records.length + ' 笔';
-  
-  listBody.innerHTML = '';
-  if(records.length===0){
-    listBody.innerHTML = `<tr><td colspan="3" style="text-align:center; opacity: .5;">还没有记录</td></tr>`;
-    return;
-  }
-  [...records].reverse().forEach(r=>{
-    const tr = document.createElement('tr');
-    tr.innerHTML = `<td>${timeStr(r.time)}</td><td class="type-${r.type}">${r.type==='cash'?'现金':'TnG'}</td><td style="text-align:right">${r.amount.toFixed(2)}</td>`;
-    listBody.appendChild(tr);
-  });
-}
+        // 更新显示
+        function updateDisplay() {
+            // 计算总额
+            let cashTotal = 0;
+            let tngTotal = 0;
 
-function addRecord(type, amount){
-  if(!amount || amount<=0) return;
-  records.push({type, amount: +amount, time: Date.now()});
-  saveData(); render();
-  statusEl.textContent = `已记 ${type==='cash'?'现金':'TnG'} ${amount}`;
-}
+            records.forEach(record => {
+                if (record.type === 'cash') {
+                    cashTotal += record.amount;
+                } else if (record.type === 'tng') {
+                    tngTotal += record.amount;
+                }
+            });
 
-function undo(){
-  if(records.length===0) return;
-  records.pop(); saveData(); render();
-}
+            // 更新卡片
+            elements.cashTotal.textContent = formatCurrency(cashTotal);
+            elements.tngTotal.textContent = formatCurrency(tngTotal);
+            elements.grandTotal.textContent = formatCurrency(cashTotal + tngTotal);
+            elements.recordCount.textContent = records.length + ' 笔';
 
-function clearToday(){
-  if(!confirm('确定清空今日所有记录？')) return;
-  records=[]; saveData(); render();
-}
+            // 更新表格
+            const tbody = elements.recordsBody;
+            tbody.innerHTML = '';
 
-function settle(){
-  const cash = records.filter(r=>r.type==='cash').reduce((s,r)=>s+r.amount,0);
-  const tng = records.filter(r=>r.type==='tng').reduce((s,r)=>s+r.amount,0);
-  const total = cash+tng;
-  statusEl.textContent = `现金${cash.toFixed(0)}, TnG ${tng.toFixed(0)}, 总共${total.toFixed(0)}`;
-}
+            if (records.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="3" class="empty-state">还没有记录</td></tr>';
+                return;
+            }
 
-// Buttons
-$('addCashBtn').onclick = ()=>{ const m=manualInput.value.match(/(\d+[\.,]?\d{0,2})/); if(m) addRecord('cash', parseFloat(m[1].replace(',','.'))); };
-$('addTngBtn').onclick = ()=>{ const m=manualInput.value.match(/(\d+[\.,]?\d{0,2})/); if(m) addRecord('tng', parseFloat(m[1].replace(',','.'))); };
-$('undoBtn').onclick = undo;
-$('clearBtn').onclick = clearToday;
-$('settleBtn').onclick = settle;
+            // 倒序显示
+            const sortedRecords = [...records].reverse();
+            sortedRecords.forEach(record => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${formatTime(record.time)}</td>
+                    <td class="type-${record.type}">${record.type === 'cash' ? '现金' : 'TnG'}</td>
+                    <td style="text-align: right;">${record.amount.toFixed(2)}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
 
-// Voice
-const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-let recognition = null;
-let isPressing = false;
+        // 添加记录
+        function addRecord(type, amount) {
+            if (!amount || amount <= 0) {
+                alert('请输入有效金额');
+                return;
+            }
 
-if(SpeechRecognition){
-  recognition = new SpeechRecognition();
-  recognition.lang = 'zh-CN';
-  recognition.onresult = e => {
-    const text = e.results[0][0].transcript;
-    lastText.textContent = text;
-    manualInput.value = text;
-  };
-}
+            records.push({
+                type: type,
+                amount: parseFloat(amount),
+                time: Date.now()
+            });
 
-micBtn.addEventListener('mousedown', ()=>{
-  isPressing = true;
-  statusEl.textContent = '聆听中...';
-  if(recognition) recognition.start();
-});
+            saveRecords();
+            updateDisplay();
+            elements.amountInput.value = '';
+            elements.statusText.textContent = `✓ 已记录 ${type === 'cash' ? '现金' : 'TnG'} RM${amount}`;
+            setTimeout(() => {
+                elements.statusText.textContent = '准备就绪';
+            }, 2000);
+        }
 
-window.addEventListener('mouseup', ()=>{
-  if(!isPressing) return;
-  isPressing = false;
-  if(recognition) recognition.stop();
-  statusEl.textContent = '准备就绪 · 离线可用';
-});
+        // 撤销
+        function undo() {
+            if (records.length === 0) {
+                alert('没有记录可以撤销');
+                return;
+            }
+            records.pop();
+            saveRecords();
+            updateDisplay();
+            elements.statusText.textContent = '✓ 已撤销上一条';
+            setTimeout(() => {
+                elements.statusText.textContent = '准备就绪';
+            }, 2000);
+        }
 
-function updateDate(){
-  const d = new Date();
-  $('date').textContent = d.toLocaleDateString('zh-CN',{month:'long',day:'numeric'});
-}
+        // 清空
+        function clearRecords() {
+            if (records.length === 0) {
+                alert('没有记录可清空');
+                return;
+            }
+            if (confirm('确定要清空今日所有记录吗？')) {
+                records = [];
+                saveRecords();
+                updateDisplay();
+                elements.statusText.textContent = '✓ 已清空所有记录';
+                setTimeout(() => {
+                    elements.statusText.textContent = '准备就绪';
+                }, 2000);
+            }
+        }
 
-updateDate();
-loadData();
-</script>
-</body></html>
+        // 结算
+        function settle() {
+            let cashTotal = 0;
+            let tngTotal = 0;
+
+            records.forEach(record => {
+                if (record.type === 'cash') {
+                    cashTotal += record.amount;
+                } else if (record.type === 'tng') {
+                    tngTotal += record.amount;
+                }
+            });
+
+            const total = cashTotal + tngTotal;
+            const message = `现金: RM${cashTotal.toFixed(2)}\nTnG: RM${tngTotal.toFixed(2)}\n总计: RM${total.toFixed(2)}`;
+            alert(message);
+        }
+
+        // 初始化语音识别
+        function initSpeechRecognition() {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            
+            if (!SpeechRecognition) {
+                elements.supportText.textContent = '⚠️ 浏览器不支持语音识别';
+                return;
+            }
+
+            recognition = new SpeechRecognition();
+            recognition.lang = 'zh-CN';
+            recognition.continuous = false;
+            recognition.interimResults = false;
+
+            recognition.onstart = () => {
+                isListening = true;
+                elements.micBtn.classList.add('listening');
+                elements.statusText.textContent = '🎤 正在聆听...';
+            };
+
+            recognition.onresult = (event) => {
+                const transcript = event.results[0][0].transcript;
+                elements.recognizedText.textContent = transcript;
+                elements.amountInput.value = transcript;
+                elements.statusText.textContent = '✓ 识别完成';
+
+                // 尝试提取金额并自动记录
+                const match = transcript.match(/\d+[\.,]?\d{0,2}/);
+                if (match) {
+                    const amount = parseFloat(match[0].replace(',', '.'));
+                    const isCash = /现金|cash|duit|tunai/.test(transcript.toLowerCase());
+                    const isTng = /tng|touch|电子|ewallet/.test(transcript.toLowerCase());
+
+                    if (isCash) {
+                        addRecord('cash', amount);
+                    } else if (isTng) {
+                        addRecord('tng', amount);
+                    }
+                }
+            };
+
+            recognition.onerror = (event) => {
+                console.error('Speech recognition error:', event.error);
+                elements.statusText.textContent = '❌ 识别失败，请重试';
+                isListening = false;
+                elements.micBtn.classList.remove('listening');
+            };
+
+            recognition.onend = () => {
+                isListening = false;
+                elements.micBtn.classList.remove('listening');
+                if (elements.statusText.textContent === '🎤 正在聆听...') {
+                    elements.statusText.textContent = '准备就绪';
+                }
+            };
+        }
+
+        // 事件监听
+        elements.micBtn.addEventListener('click', () => {
+            if (!recognition) {
+                alert('语音识别不可用');
+                return;
+            }
+
+            if (isListening) {
+                recognition.stop();
+            } else {
+                elements.recognizedText.textContent = '-';
+                recognition.start();
+            }
+        });
+
+        elements.btnAddCash.addEventListener('click', () => {
+            const amount = elements.amountInput.value;
+            if (amount) {
+                addRecord('cash', amount);
+            }
+        });
+
+        elements.btnAddTng.addEventListener('click', () => {
+            const amount = elements.amountInput.value;
+            if (amount) {
+                addRecord('tng', amount);
+            }
+        });
+
+        elements.btnUndo.addEventListener('click', undo);
+        elements.btnClear.addEventListener('click', clearRecords);
+        elements.btnSettle.addEventListener('click', settle);
+
+        // 初始化
+        updateDate();
+        loadRecords();
+        initSpeechRecognition();
+
+        // 刷新页面时自动加载数据
+        window.addEventListener('focus', loadRecords);
+    </script>
+</body>
+</html>
