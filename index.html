@@ -103,7 +103,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 10px;
+            padding: 12px;
             margin-bottom: 8px;
             background: #1a1a1a;
             border-radius: 6px;
@@ -114,11 +114,28 @@
         .record-item.tng { border-left-color: #3b82f6; }
         
         .record-info { flex: 1; }
-        .record-type { font-size: 12px; color: #888; }
+        .record-type { font-size: 12px; font-weight: bold; }
         .record-type.cash { color: #22c55e; }
         .record-type.tng { color: #3b82f6; }
-        .record-amount { font-size: 18px; font-weight: bold; }
-        .record-time { font-size: 11px; color: #666; }
+        
+        .record-details {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 5px;
+        }
+        
+        .record-amount { 
+            font-size: 16px; 
+            font-weight: bold;
+        }
+        
+        .record-time { 
+            font-size: 11px; 
+            color: #666;
+            text-align: right;
+            margin-left: 10px;
+        }
         
         .record-delete {
             background: #7f1d1d;
@@ -128,6 +145,7 @@
             border-radius: 4px;
             cursor: pointer;
             font-size: 12px;
+            margin-left: 10px;
         }
         
         .actions {
@@ -215,6 +233,15 @@
             return `hawker_${year}_${month}_${day}`;
         }
         
+        // 获取当前时间（格式：HH:MM:SS）
+        function getCurrentTime() {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            return `${hours}:${minutes}:${seconds}`;
+        }
+        
         // 加载数据
         function loadData() {
             const key = getTodayKey();
@@ -239,7 +266,8 @@
             records.push({
                 type: type,
                 amount: parseFloat(amount),
-                time: new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+                time: getCurrentTime(),
+                timestamp: Date.now()
             });
             
             saveData();
@@ -327,10 +355,10 @@
                     <div class="record-item ${r.type}">
                         <div class="record-info">
                             <div class="record-type ${r.type}">${icon} ${typeLabel}</div>
-                            <div class="record-time">${r.time}</div>
-                        </div>
-                        <div>
-                            <div class="record-amount">RM ${r.amount.toFixed(2)}</div>
+                            <div class="record-details">
+                                <div class="record-amount">RM ${r.amount.toFixed(2)}</div>
+                                <div class="record-time">⏰ ${r.time}</div>
+                            </div>
                         </div>
                         <button class="record-delete" onclick="deleteRecord(${i})">删除</button>
                     </div>
