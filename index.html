@@ -2,653 +2,386 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>小贩语音记账</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>小贩快速记账</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            background: #1a1a1a; 
+            color: #fff; 
+            font-family: Arial, sans-serif;
+            padding: 10px;
         }
-
-        body {
-            background: #000;
-            color: #fff;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
-            height: 100vh;
-            overflow: hidden;
-        }
-
-        .container {
-            max-width: 520px;
-            margin: 0 auto;
-            padding: 20px;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            overflow-y: auto;
-        }
-
-        header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid #333;
-        }
-
-        h1 {
-            font-size: 24px;
-            font-weight: bold;
-        }
-
-        .date-display {
-            font-size: 12px;
-            opacity: 0.7;
-        }
-
-        .totals {
+        .container { max-width: 600px; margin: 0 auto; }
+        
+        h1 { text-align: center; margin: 15px 0; font-size: 28px; }
+        
+        .summary {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 12px;
+            gap: 10px;
             margin-bottom: 20px;
         }
-
-        .card {
-            background: #111;
-            border: 1px solid #333;
-            border-radius: 12px;
-            padding: 16px;
-            text-align: center;
-        }
-
-        .card-label {
-            font-size: 12px;
-            opacity: 0.6;
-            margin-bottom: 8px;
-        }
-
-        .card-value {
-            font-size: 28px;
-            font-weight: bold;
-        }
-
-        .cash .card-value {
-            color: #22c55e;
-        }
-
-        .tng .card-value {
-            color: #3b82f6;
-        }
-
-        .total-card {
-            grid-column: 1 / -1;
-            background: #1a1a1a;
-        }
-
-        .total-card .card-value {
-            color: #facc15;
-            font-size: 36px;
-        }
-
-        .mic-section {
-            text-align: center;
-            margin: 30px 0;
-        }
-
-        .mic-btn {
-            width: 150px;
-            height: 150px;
-            border-radius: 50%;
-            border: none;
-            background: linear-gradient(135deg, #dc2626, #991b1b);
-            color: white;
-            font-size: 60px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto;
-            transition: transform 0.1s;
-            box-shadow: 0 10px 30px rgba(220, 38, 38, 0.3);
-        }
-
-        .mic-btn:active {
-            transform: scale(0.95);
-        }
-
-        .mic-btn.listening {
-            background: linear-gradient(135deg, #ea580c, #c2410c);
-        }
-
-        .status-text {
-            margin-top: 15px;
-            font-size: 14px;
-            color: #888;
-            min-height: 20px;
-        }
-
-        .input-section {
-            background: #111;
-            border: 1px solid #333;
-            border-radius: 12px;
-            padding: 16px;
-            margin: 20px 0;
-        }
-
-        .input-label {
-            font-size: 12px;
-            opacity: 0.6;
-            margin-bottom: 10px;
-        }
-
-        .recognized-text {
-            font-size: 18px;
-            font-weight: bold;
-            margin-bottom: 12px;
-            min-height: 24px;
-            padding: 8px;
-            background: #000;
+        
+        .sum-box {
+            background: #0d0d0d;
+            padding: 15px;
             border-radius: 8px;
-            border: 1px solid #333;
+            text-align: center;
+            border: 2px solid #333;
         }
-
+        
+        .sum-label { font-size: 12px; color: #888; margin-bottom: 8px; }
+        .sum-value { font-size: 32px; font-weight: bold; }
+        .cash-value { color: #4ade80; }
+        .tng-value { color: #60a5fa; }
+        .total-value { color: #fbbf24; }
+        
+        .input-area {
+            background: #0d0d0d;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 2px solid #333;
+        }
+        
         .input-row {
             display: flex;
-            gap: 8px;
+            gap: 10px;
+            margin-bottom: 10px;
         }
-
-        .input-row input {
+        
+        input[type="number"] {
             flex: 1;
-            background: #000;
-            border: 1px solid #333;
-            border-radius: 8px;
             padding: 12px;
+            border: 1px solid #444;
+            border-radius: 6px;
+            background: #1a1a1a;
             color: #fff;
-            font-size: 16px;
+            font-size: 18px;
         }
-
-        .input-row input:focus {
-            outline: none;
-            border-color: #666;
-        }
-
-        .input-row button {
-            padding: 12px 16px;
+        
+        button {
+            padding: 12px 20px;
             border: none;
-            border-radius: 8px;
+            border-radius: 6px;
             font-weight: bold;
             font-size: 14px;
             cursor: pointer;
-            white-space: nowrap;
+            transition: all 0.2s;
         }
-
-        .btn-cash {
-            background: #052e16;
-            color: #4ade80;
-            border: 1px solid #14532d;
+        
+        button:active { transform: scale(0.95); }
+        
+        .btn-cash { background: #22c55e; color: #000; flex: 1; }
+        .btn-tng { background: #3b82f6; color: #fff; flex: 1; }
+        .btn-quick { 
+            background: #666; 
+            color: #fff; 
+            padding: 10px 15px;
+            font-size: 13px;
         }
-
-        .btn-tng {
-            background: #0b1a3a;
-            color: #60a5fa;
-            border: 1px solid #1e3a8a;
+        
+        .quick-buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin-bottom: 15px;
         }
-
-        .records-section {
-            margin: 20px 0;
-            flex: 1;
+        
+        .records {
+            background: #0d0d0d;
+            padding: 15px;
+            border-radius: 8px;
+            border: 2px solid #333;
+            margin-bottom: 20px;
+            max-height: 400px;
             overflow-y: auto;
         }
-
-        .records-title {
-            font-size: 12px;
-            opacity: 0.6;
-            margin-bottom: 12px;
+        
+        .record-item {
             display: flex;
             justify-content: space-between;
-        }
-
-        .record-count {
-            background: #333;
-            padding: 2px 8px;
-            border-radius: 12px;
-            font-size: 11px;
-        }
-
-        .records-table {
-            width: 100%;
-            border-collapse: collapse;
-            background: #111;
-            border: 1px solid #333;
-            border-radius: 8px;
-            overflow: hidden;
-        }
-
-        .records-table th {
+            align-items: center;
+            padding: 10px;
+            margin-bottom: 8px;
             background: #1a1a1a;
-            padding: 12px;
-            text-align: left;
+            border-radius: 6px;
+            border-left: 4px solid #444;
+        }
+        
+        .record-item.cash { border-left-color: #22c55e; }
+        .record-item.tng { border-left-color: #3b82f6; }
+        
+        .record-info { flex: 1; }
+        .record-type { font-size: 12px; color: #888; }
+        .record-type.cash { color: #22c55e; }
+        .record-type.tng { color: #3b82f6; }
+        .record-amount { font-size: 18px; font-weight: bold; }
+        .record-time { font-size: 11px; color: #666; }
+        
+        .record-delete {
+            background: #7f1d1d;
+            color: #fca5a5;
+            border: none;
+            padding: 6px 10px;
+            border-radius: 4px;
+            cursor: pointer;
             font-size: 12px;
-            opacity: 0.6;
         }
-
-        .records-table td {
-            padding: 12px;
-            border-top: 1px solid #222;
-            font-size: 14px;
-        }
-
-        .records-table tr:first-child td {
-            border-top: none;
-        }
-
-        .type-cash {
-            color: #22c55e;
-            font-weight: bold;
-        }
-
-        .type-tng {
-            color: #3b82f6;
-            font-weight: bold;
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 30px;
-            opacity: 0.5;
-            font-size: 14px;
-        }
-
-        .action-buttons {
+        
+        .actions {
             display: grid;
             grid-template-columns: 1fr 1fr 1fr;
             gap: 10px;
-            margin-top: 20px;
-            padding-bottom: 20px;
+            margin-bottom: 20px;
         }
-
-        .action-buttons button {
-            padding: 14px;
-            border: none;
-            border-radius: 8px;
-            font-weight: bold;
-            font-size: 14px;
-            cursor: pointer;
-            transition: opacity 0.2s;
-        }
-
-        .action-buttons button:active {
-            opacity: 0.8;
-        }
-
-        .btn-settle {
-            background: #facc15;
-            color: #000;
-        }
-
-        .btn-undo {
-            background: #333;
-            color: #fff;
-        }
-
-        .btn-clear {
-            background: #7f1d1d;
-            color: #fca5a5;
-        }
-
-        .recognition-support {
-            font-size: 11px;
-            opacity: 0.5;
-            margin-top: 10px;
+        
+        .btn-settle { background: #fbbf24; color: #000; }
+        .btn-undo { background: #666; color: #fff; }
+        .btn-clear { background: #7f1d1d; color: #fca5a5; }
+        
+        .empty-state {
             text-align: center;
+            padding: 30px;
+            color: #666;
+        }
+        
+        .status-msg {
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 14px;
+            color: #4ade80;
+            min-height: 20px;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <header>
-            <h1>💰 小贩记账</h1>
-            <div class="date-display" id="dateDisplay">-</div>
-        </header>
-
-        <div class="totals">
-            <div class="card cash">
-                <div class="card-label">现金</div>
-                <div class="card-value" id="cashTotal">RM 0.00</div>
+        <h1>💰 小贩记账</h1>
+        
+        <div class="summary">
+            <div class="sum-box">
+                <div class="sum-label">现金</div>
+                <div class="sum-value cash-value" id="cashSum">RM 0</div>
             </div>
-            <div class="card tng">
-                <div class="card-label">TnG</div>
-                <div class="card-value" id="tngTotal">RM 0.00</div>
-            </div>
-            <div class="card total-card">
-                <div class="card-label">总收入</div>
-                <div class="card-value" id="grandTotal">RM 0.00</div>
+            <div class="sum-box">
+                <div class="sum-label">TnG</div>
+                <div class="sum-value tng-value" id="tngSum">RM 0</div>
             </div>
         </div>
-
-        <div class="mic-section">
-            <button class="mic-btn" id="micBtn">🎤</button>
-            <div class="status-text" id="statusText">点击麦克风说话</div>
-            <div class="recognition-support" id="supportText"></div>
+        
+        <div class="sum-box" style="margin-bottom: 20px;">
+            <div class="sum-label">今日总收入</div>
+            <div class="sum-value total-value" id="totalSum">RM 0</div>
         </div>
-
-        <div class="input-section">
-            <div class="input-label">识别内容</div>
-            <div class="recognized-text" id="recognizedText">-</div>
+        
+        <div class="status-msg" id="statusMsg"></div>
+        
+        <div class="input-area">
+            <div class="quick-buttons" id="quickButtons"></div>
+            
             <div class="input-row">
-                <input type="number" id="amountInput" placeholder="输入金额" step="0.01">
-                <button class="input-row button btn-cash" id="btnAddCash">现金</button>
-                <button class="input-row button btn-tng" id="btnAddTng">TnG</button>
+                <input type="number" id="amountInput" placeholder="输入金额" step="0.01" min="0">
+            </div>
+            
+            <div class="input-row">
+                <button class="btn-cash" onclick="addCash()">💵 记现金</button>
+                <button class="btn-tng" onclick="addTng()">📱 记TnG</button>
             </div>
         </div>
-
-        <div class="records-section">
-            <div class="records-title">
-                <span>今日记录</span>
-                <span class="record-count" id="recordCount">0 笔</span>
-            </div>
-            <table class="records-table">
-                <thead>
-                    <tr>
-                        <th>时间</th>
-                        <th>类型</th>
-                        <th style="text-align: right;">金额</th>
-                    </tr>
-                </thead>
-                <tbody id="recordsBody">
-                    <tr><td colspan="3" class="empty-state">还没有记录</td></tr>
-                </tbody>
-            </table>
+        
+        <div class="records" id="recordsList">
+            <div class="empty-state">还没有记录</div>
         </div>
-
-        <div class="action-buttons">
-            <button class="btn-settle" id="btnSettle">结算</button>
-            <button class="btn-undo" id="btnUndo">撤销</button>
-            <button class="btn-clear" id="btnClear">清空</button>
+        
+        <div class="actions">
+            <button class="btn-settle" onclick="showSummary()">结算</button>
+            <button class="btn-undo" onclick="undo()">撤销</button>
+            <button class="btn-clear" onclick="clearAll()">清空</button>
         </div>
     </div>
 
     <script>
-        // 应用状态
+        // ===== 数据管理 =====
         let records = [];
-        let isListening = false;
-        let recognition = null;
-
-        // 获取DOM元素
-        const elements = {
-            cashTotal: document.getElementById('cashTotal'),
-            tngTotal: document.getElementById('tngTotal'),
-            grandTotal: document.getElementById('grandTotal'),
-            micBtn: document.getElementById('micBtn'),
-            statusText: document.getElementById('statusText'),
-            recognizedText: document.getElementById('recognizedText'),
-            amountInput: document.getElementById('amountInput'),
-            recordsBody: document.getElementById('recordsBody'),
-            recordCount: document.getElementById('recordCount'),
-            dateDisplay: document.getElementById('dateDisplay'),
-            supportText: document.getElementById('supportText'),
-            btnAddCash: document.getElementById('btnAddCash'),
-            btnAddTng: document.getElementById('btnAddTng'),
-            btnSettle: document.getElementById('btnSettle'),
-            btnUndo: document.getElementById('btnUndo'),
-            btnClear: document.getElementById('btnClear')
-        };
-
-        // 格式化金额
-        function formatCurrency(amount) {
-            return 'RM ' + amount.toFixed(2);
-        }
-
-        // 格式化时间
-        function formatTime(timestamp) {
-            const date = new Date(timestamp);
-            return date.toLocaleTimeString('zh-CN', {
-                hour: '2-digit',
-                minute: '2-digit',
-                second: '2-digit'
-            });
-        }
-
-        // 更新日期显示
-        function updateDate() {
-            const today = new Date();
-            const options = { month: 'long', day: 'numeric', weekday: 'short' };
-            elements.dateDisplay.textContent = today.toLocaleDateString('zh-CN', options);
-        }
-
-        // 获取今天的key
+        
+        // 获取今天的日期key
         function getTodayKey() {
-            const date = new Date().toISOString().slice(0, 10);
-            return 'hawker_' + date;
+            const date = new Date();
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `hawker_${year}_${month}_${day}`;
         }
-
+        
         // 加载数据
-        function loadRecords() {
+        function loadData() {
             const key = getTodayKey();
-            const data = localStorage.getItem(key);
-            records = data ? JSON.parse(data) : [];
+            const saved = localStorage.getItem(key);
+            records = saved ? JSON.parse(saved) : [];
             updateDisplay();
         }
-
+        
         // 保存数据
-        function saveRecords() {
+        function saveData() {
             const key = getTodayKey();
             localStorage.setItem(key, JSON.stringify(records));
         }
-
-        // 更新显示
-        function updateDisplay() {
-            // 计算总额
-            let cashTotal = 0;
-            let tngTotal = 0;
-
-            records.forEach(record => {
-                if (record.type === 'cash') {
-                    cashTotal += record.amount;
-                } else if (record.type === 'tng') {
-                    tngTotal += record.amount;
-                }
-            });
-
-            // 更新卡片
-            elements.cashTotal.textContent = formatCurrency(cashTotal);
-            elements.tngTotal.textContent = formatCurrency(tngTotal);
-            elements.grandTotal.textContent = formatCurrency(cashTotal + tngTotal);
-            elements.recordCount.textContent = records.length + ' 笔';
-
-            // 更新表格
-            const tbody = elements.recordsBody;
-            tbody.innerHTML = '';
-
-            if (records.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="3" class="empty-state">还没有记录</td></tr>';
-                return;
-            }
-
-            // 倒序显示
-            const sortedRecords = [...records].reverse();
-            sortedRecords.forEach(record => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${formatTime(record.time)}</td>
-                    <td class="type-${record.type}">${record.type === 'cash' ? '现金' : 'TnG'}</td>
-                    <td style="text-align: right;">${record.amount.toFixed(2)}</td>
-                `;
-                tbody.appendChild(row);
-            });
-        }
-
-        // 添加记录
+        
+        // ===== 记录操作 =====
         function addRecord(type, amount) {
             if (!amount || amount <= 0) {
-                alert('请输入有效金额');
+                showStatus('❌ 请输入有效金额');
                 return;
             }
-
+            
             records.push({
                 type: type,
                 amount: parseFloat(amount),
-                time: Date.now()
+                time: new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
             });
-
-            saveRecords();
+            
+            saveData();
             updateDisplay();
-            elements.amountInput.value = '';
-            elements.statusText.textContent = `✓ 已记录 ${type === 'cash' ? '现金' : 'TnG'} RM${amount}`;
-            setTimeout(() => {
-                elements.statusText.textContent = '准备就绪';
-            }, 2000);
+            document.getElementById('amountInput').value = '';
+            showStatus(`✓ 已记录 ${type === 'cash' ? '现金' : 'TnG'} RM${amount}`);
         }
-
-        // 撤销
+        
+        function addCash() {
+            const amount = document.getElementById('amountInput').value;
+            addRecord('cash', amount);
+        }
+        
+        function addTng() {
+            const amount = document.getElementById('amountInput').value;
+            addRecord('tng', amount);
+        }
+        
         function undo() {
             if (records.length === 0) {
-                alert('没有记录可以撤销');
+                showStatus('❌ 没有记录可以撤销');
                 return;
             }
             records.pop();
-            saveRecords();
+            saveData();
             updateDisplay();
-            elements.statusText.textContent = '✓ 已撤销上一条';
-            setTimeout(() => {
-                elements.statusText.textContent = '准备就绪';
-            }, 2000);
+            showStatus('✓ 已撤销');
         }
-
-        // 清空
-        function clearRecords() {
+        
+        function clearAll() {
             if (records.length === 0) {
-                alert('没有记录可清空');
+                showStatus('❌ 没有记录');
                 return;
             }
-            if (confirm('确定要清空今日所有记录吗？')) {
+            if (confirm('确定要删除今天的所有记录吗？')) {
                 records = [];
-                saveRecords();
+                saveData();
                 updateDisplay();
-                elements.statusText.textContent = '✓ 已清空所有记录';
-                setTimeout(() => {
-                    elements.statusText.textContent = '准备就绪';
-                }, 2000);
+                showStatus('✓ 已清空');
             }
         }
-
-        // 结算
-        function settle() {
-            let cashTotal = 0;
-            let tngTotal = 0;
-
-            records.forEach(record => {
-                if (record.type === 'cash') {
-                    cashTotal += record.amount;
-                } else if (record.type === 'tng') {
-                    tngTotal += record.amount;
-                }
-            });
-
-            const total = cashTotal + tngTotal;
-            const message = `现金: RM${cashTotal.toFixed(2)}\nTnG: RM${tngTotal.toFixed(2)}\n总计: RM${total.toFixed(2)}`;
-            alert(message);
+        
+        function deleteRecord(index) {
+            records.splice(index, 1);
+            saveData();
+            updateDisplay();
+            showStatus('✓ 已删除');
         }
-
-        // 初始化语音识别
-        function initSpeechRecognition() {
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        
+        // ===== 显示更新 =====
+        function updateDisplay() {
+            updateSummary();
+            updateRecordsList();
+        }
+        
+        function updateSummary() {
+            let cashSum = 0;
+            let tngSum = 0;
             
-            if (!SpeechRecognition) {
-                elements.supportText.textContent = '⚠️ 浏览器不支持语音识别';
-                return;
-            }
-
-            recognition = new SpeechRecognition();
-            recognition.lang = 'zh-CN';
-            recognition.continuous = false;
-            recognition.interimResults = false;
-
-            recognition.onstart = () => {
-                isListening = true;
-                elements.micBtn.classList.add('listening');
-                elements.statusText.textContent = '🎤 正在聆听...';
-            };
-
-            recognition.onresult = (event) => {
-                const transcript = event.results[0][0].transcript;
-                elements.recognizedText.textContent = transcript;
-                elements.amountInput.value = transcript;
-                elements.statusText.textContent = '✓ 识别完成';
-
-                // 尝试提取金额并自动记录
-                const match = transcript.match(/\d+[\.,]?\d{0,2}/);
-                if (match) {
-                    const amount = parseFloat(match[0].replace(',', '.'));
-                    const isCash = /现金|cash|duit|tunai/.test(transcript.toLowerCase());
-                    const isTng = /tng|touch|电子|ewallet/.test(transcript.toLowerCase());
-
-                    if (isCash) {
-                        addRecord('cash', amount);
-                    } else if (isTng) {
-                        addRecord('tng', amount);
-                    }
-                }
-            };
-
-            recognition.onerror = (event) => {
-                console.error('Speech recognition error:', event.error);
-                elements.statusText.textContent = '❌ 识别失败，请重试';
-                isListening = false;
-                elements.micBtn.classList.remove('listening');
-            };
-
-            recognition.onend = () => {
-                isListening = false;
-                elements.micBtn.classList.remove('listening');
-                if (elements.statusText.textContent === '🎤 正在聆听...') {
-                    elements.statusText.textContent = '准备就绪';
-                }
-            };
+            records.forEach(r => {
+                if (r.type === 'cash') cashSum += r.amount;
+                else if (r.type === 'tng') tngSum += r.amount;
+            });
+            
+            document.getElementById('cashSum').textContent = 'RM ' + cashSum.toFixed(2);
+            document.getElementById('tngSum').textContent = 'RM ' + tngSum.toFixed(2);
+            document.getElementById('totalSum').textContent = 'RM ' + (cashSum + tngSum).toFixed(2);
         }
-
-        // 事件监听
-        elements.micBtn.addEventListener('click', () => {
-            if (!recognition) {
-                alert('语音识别不可用');
+        
+        function updateRecordsList() {
+            const list = document.getElementById('recordsList');
+            
+            if (records.length === 0) {
+                list.innerHTML = '<div class="empty-state">还没有记录</div>';
                 return;
             }
-
-            if (isListening) {
-                recognition.stop();
-            } else {
-                elements.recognizedText.textContent = '-';
-                recognition.start();
+            
+            let html = '';
+            // 倒序显示（最新的在上面）
+            for (let i = records.length - 1; i >= 0; i--) {
+                const r = records[i];
+                const typeLabel = r.type === 'cash' ? '现金' : 'TnG';
+                const icon = r.type === 'cash' ? '💵' : '📱';
+                html += `
+                    <div class="record-item ${r.type}">
+                        <div class="record-info">
+                            <div class="record-type ${r.type}">${icon} ${typeLabel}</div>
+                            <div class="record-time">${r.time}</div>
+                        </div>
+                        <div>
+                            <div class="record-amount">RM ${r.amount.toFixed(2)}</div>
+                        </div>
+                        <button class="record-delete" onclick="deleteRecord(${i})">删除</button>
+                    </div>
+                `;
             }
-        });
-
-        elements.btnAddCash.addEventListener('click', () => {
-            const amount = elements.amountInput.value;
-            if (amount) {
-                addRecord('cash', amount);
-            }
-        });
-
-        elements.btnAddTng.addEventListener('click', () => {
-            const amount = elements.amountInput.value;
-            if (amount) {
-                addRecord('tng', amount);
-            }
-        });
-
-        elements.btnUndo.addEventListener('click', undo);
-        elements.btnClear.addEventListener('click', clearRecords);
-        elements.btnSettle.addEventListener('click', settle);
-
-        // 初始化
-        updateDate();
-        loadRecords();
-        initSpeechRecognition();
-
-        // 刷新页面时自动加载数据
-        window.addEventListener('focus', loadRecords);
+            list.innerHTML = html;
+        }
+        
+        function showStatus(msg) {
+            const statusDiv = document.getElementById('statusMsg');
+            statusDiv.textContent = msg;
+            setTimeout(() => {
+                statusDiv.textContent = '';
+            }, 3000);
+        }
+        
+        function showSummary() {
+            let cashSum = 0;
+            let tngSum = 0;
+            
+            records.forEach(r => {
+                if (r.type === 'cash') cashSum += r.amount;
+                else if (r.type === 'tng') tngSum += r.amount;
+            });
+            
+            const total = cashSum + tngSum;
+            const msg = `📊 今日结算\n\n现金: RM ${cashSum.toFixed(2)}\nTnG: RM ${tngSum.toFixed(2)}\n\n总计: RM ${total.toFixed(2)}\n\n交易数: ${records.length} 笔`;
+            alert(msg);
+        }
+        
+        // ===== 快速按钮 =====
+        function initQuickButtons() {
+            const amounts = [5, 10, 20, 50];
+            const container = document.getElementById('quickButtons');
+            
+            amounts.forEach(amt => {
+                const btn = document.createElement('button');
+                btn.className = 'btn-quick';
+                btn.textContent = 'RM ' + amt;
+                btn.onclick = () => {
+                    document.getElementById('amountInput').value = amt;
+                };
+                container.appendChild(btn);
+            });
+        }
+        
+        // ===== 初始化 =====
+        window.onload = () => {
+            loadData();
+            initQuickButtons();
+        };
     </script>
 </body>
 </html>
